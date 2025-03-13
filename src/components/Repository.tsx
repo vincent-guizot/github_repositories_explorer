@@ -43,7 +43,7 @@ const Repository = () => {
 
       {repos.length > 0 && (
         <div>
-          <h3 className="text-lg font-bold mt-4">Repositories:</h3>
+          <h3 className="text-lg text-center font-bold my-4">Repositories:</h3>
           {repos.map((repo: any) => (
             <RepoCard repo={repo}></RepoCard>
           ))}

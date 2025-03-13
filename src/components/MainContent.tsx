@@ -41,7 +41,7 @@ export default function GithubSearch() {
                 JSON.stringify(user);
               }
               return (
-                <div key={user.id} className="rounded shadow">
+                <div key={user.id} className="rounded shadow mt-2">
                   <div className="flex">
                     <div className="flex-[0.2] p-2">
                       <img
