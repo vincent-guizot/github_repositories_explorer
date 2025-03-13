@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import RepoCard from "./RepoCard";
 
 const GITHUB_API_URL = "https://api.github.com/users/";
 
@@ -36,14 +37,17 @@ const Repository = () => {
 
   return (
     <div>
-      {JSON.stringify(repos)}
+      {/* {JSON.stringify(repos)} */}
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
       {repos.length > 0 && (
         <div>
           <h3 className="text-lg font-bold mt-4">Repositories:</h3>
-          <ul className="list-disc pl-5">
+          {repos.map((repo: any) => (
+            <RepoCard repo={repo}></RepoCard>
+          ))}
+          {/* <ul className="list-disc pl-5">
             {repos.map((repo: any) => (
               <li key={repo.id}>
                 <a
@@ -56,7 +60,7 @@ const Repository = () => {
                 </a>
               </li>
             ))}
-          </ul>
+          </ul> */}
         </div>
       )}
     </div>
