@@ -1,4 +1,7 @@
 :root {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 15px;
+}
+
+* {
+  scrollbar-width: thin;
 }

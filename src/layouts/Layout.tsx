@@ -1,12 +1,18 @@
-import { Link, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import Header from "../components/Header";
 
 const Layout = () => {
   return (
-    <div className="w-1/3 mx-auto bg-white rounded-xl shadow my-3 p-4">
-      <h1 className="text-2xl font-bold text-center my-3">
-        <Link to="/">GitHub Explorer Repositories</Link>
-      </h1>
-      <Outlet></Outlet>
+    <div className="relative min-h-screen overflow-x-hidden bg-slate-50 dark:bg-slate-950">
+      <div className="pointer-events-none absolute -left-32 top-24 h-72 w-72 rounded-full bg-indigo-200/50 blur-3xl dark:bg-indigo-900/20" />
+      <div className="pointer-events-none absolute -right-24 top-96 h-80 w-80 rounded-full bg-violet-200/40 blur-3xl dark:bg-violet-900/20" />
+
+      <div className="relative">
+        <Header />
+        <main>
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

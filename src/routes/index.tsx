@@ -1,21 +1,19 @@
 import { createBrowserRouter } from "react-router-dom";
-import Repository from "../components/Repository";
-import MainContent from "../components/MainContent";
 import Layout from "../layouts/Layout";
+import Home from "../pages/Home";
+import Login from "../pages/Login";
+import MyRepositories from "../pages/MyRepositories";
+import RepositoryDetail from "../pages/RepositoryDetail";
 
 const routes = createBrowserRouter([
   {
     path: "/",
-    element: <Layout></Layout>,
+    element: <Layout />,
     children: [
-      {
-        path: "/",
-        element: <MainContent></MainContent>,
-      },
-      {
-        path: "/users/:username/repos",
-        element: <Repository></Repository>,
-      },
+      { path: "/", element: <Home /> },
+      { path: "/login", element: <Login /> },
+      { path: "/my-repositories", element: <MyRepositories /> },
+      { path: "/repositories/:owner/:repo", element: <RepositoryDetail /> },
     ],
   },
 ]);
