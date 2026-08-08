@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Code2,
@@ -107,7 +108,12 @@ export default function RepositoryDetail() {
         Back to My Repositories
       </Link>
 
-      <div className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="mt-5 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between"
+      >
         <div className="flex items-start gap-4">
           <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
             <Code2 size={24} />
@@ -170,33 +176,50 @@ export default function RepositoryDetail() {
             Watch
           </a>
         </div>
-      </div>
+      </motion.div>
 
       <div className="mt-8 flex gap-6 overflow-x-auto border-b border-slate-200 dark:border-slate-800">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`whitespace-nowrap border-b-2 pb-3 text-sm font-medium transition-colors ${
+            className={`relative whitespace-nowrap pb-3 text-sm font-medium transition-colors ${
               tab === t.id
-                ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
-                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                ? "text-indigo-600 dark:text-indigo-400"
+                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
             {t.label}
+            {tab === t.id && (
+              <motion.span
+                layoutId="repo-tab"
+                className="absolute inset-x-0 -bottom-px h-0.5 bg-indigo-600 dark:bg-indigo-400"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
           </button>
         ))}
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          {tab === "overview" && <FilesPanel owner={owner} repo={repo} root />}
-          {tab === "files" && <FilesPanel owner={owner} repo={repo} />}
-          {tab === "commits" && <CommitsPanel owner={owner} repo={repo} />}
-          {tab === "branches" && (
-            <BranchesPanel owner={owner} repo={repo} defaultBranch={data.default_branch} />
-          )}
-          {tab === "about" && <AboutPanel data={data} />}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+            >
+              {tab === "overview" && <FilesPanel owner={owner} repo={repo} root />}
+              {tab === "files" && <FilesPanel owner={owner} repo={repo} />}
+              {tab === "commits" && <CommitsPanel owner={owner} repo={repo} />}
+              {tab === "branches" && (
+                <BranchesPanel owner={owner} repo={repo} defaultBranch={data.default_branch} />
+              )}
+              {tab === "about" && <AboutPanel data={data} />}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         <aside className="space-y-6">

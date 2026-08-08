@@ -1,12 +1,17 @@
 import { Link } from "react-router-dom";
-import GithubIcon from "./icons/GithubIcon";
+import { motion } from "framer-motion";
+import logoIcon from "../assets/logo-icon.png";
 
 export default function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-sm shadow-indigo-500/30 transition-transform group-hover:scale-105">
-        <GithubIcon size={17} />
-      </span>
+      <motion.img
+        whileHover={{ scale: 1.06, rotate: -2 }}
+        transition={{ type: "spring", stiffness: 300, damping: 15 }}
+        src={logoIcon}
+        alt="RepoCheck"
+        className="h-9 w-9 rounded-xl shadow-sm shadow-indigo-500/30"
+      />
       {!compact && (
         <span className="leading-tight">
           <span className="block text-[15px] font-bold tracking-tight text-slate-900 dark:text-white">

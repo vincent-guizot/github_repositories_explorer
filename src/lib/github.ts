@@ -7,6 +7,17 @@ const api = axios.create({
   },
 });
 
+/** Attaches (or clears) the OAuth access token used for every subsequent
+ * request. Once set, requests run against the real signed-in account and
+ * get the authenticated (5,000/hr) rate limit instead of the anonymous one. */
+export function setAuthToken(token: string | null) {
+  if (token) {
+    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common.Authorization;
+  }
+}
+
 export interface GithubUser {
   login: string;
   id: number;
@@ -18,6 +29,15 @@ export interface GithubUser {
   followers: number;
   following: number;
   location: string | null;
+}
+
+export interface GithubSearchUser {
+  login: string;
+  id: number;
+  avatar_url: string;
+  html_url: string;
+  type: "User" | "Organization";
+  score: number;
 }
 
 export interface GithubRepo {
@@ -42,6 +62,7 @@ export interface GithubRepo {
   homepage: string | null;
   topics: string[];
   license: { spdx_id: string; name: string } | null;
+  owner?: { login: string; avatar_url: string };
 }
 
 export interface GithubContributor {
@@ -93,6 +114,52 @@ export async function getUser(username: string): Promise<GithubUser> {
     return data;
   } catch (err) {
     throw friendlyError(err, "Gagal memuat data pengguna.");
+  }
+}
+
+/** The currently signed-in account (requires a valid OAuth token). */
+export async function getAuthenticatedUser(): Promise<GithubUser> {
+  try {
+    const { data } = await api.get(`/user`);
+    return data;
+  } catch (err) {
+    throw friendlyError(err, "Gagal memuat akun kamu.");
+  }
+}
+
+/** Real repositories owned by the signed-in account, public and private. */
+export async function getAuthenticatedUserRepos(): Promise<GithubRepo[]> {
+  try {
+    const { data } = await api.get(`/user/repos`, {
+      params: { per_page: 100, sort: "updated", affiliation: "owner" },
+    });
+    return data;
+  } catch (err) {
+    throw friendlyError(err, "Gagal memuat repository kamu.");
+  }
+}
+
+export async function searchUsers(query: string): Promise<GithubSearchUser[]> {
+  if (!query.trim()) return [];
+  try {
+    const { data } = await api.get(`/search/users`, {
+      params: { q: query, per_page: 10 },
+    });
+    return data.items;
+  } catch (err) {
+    throw friendlyError(err, "Gagal mencari user.");
+  }
+}
+
+export async function searchRepositories(query: string): Promise<GithubRepo[]> {
+  if (!query.trim()) return [];
+  try {
+    const { data } = await api.get(`/search/repositories`, {
+      params: { q: query, per_page: 10 },
+    });
+    return data.items;
+  } catch (err) {
+    throw friendlyError(err, "Gagal mencari repository.");
   }
 }
 
