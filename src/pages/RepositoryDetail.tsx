@@ -15,7 +15,12 @@ import {
   RefreshCw,
   ChevronRight,
   Home,
+  Share2,
+  Check,
+  ExternalLink,
 } from "lucide-react";
+import CloneDropdown from "../components/CloneDropdown";
+import OverviewPanel from "../components/OverviewPanel";
 import {
   getRepo,
   getRepoLanguages,
@@ -43,6 +48,13 @@ export default function RepositoryDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -160,24 +172,24 @@ export default function RepositoryDetail() {
           </div>
         </div>
 
-        <div className="flex shrink-0 gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <CloneDropdown repo={data} />
+          <button
+            type="button"
+            onClick={handleShare}
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            {copiedLink ? <Check size={15} className="text-emerald-500" /> : <Share2 size={15} />}
+            <span>{copiedLink ? "Copied!" : "Share"}</span>
+          </button>
           <a
-            href={`${data.html_url}/stargazers`}
+            href={data.html_url}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            <Star size={15} />
-            Star
-          </a>
-          <a
-            href={`${data.html_url}/watchers`}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-500/25 transition-transform hover:-translate-y-0.5"
-          >
-            <Eye size={15} />
-            Watch
+            <ExternalLink size={15} />
+            <span>GitHub</span>
           </a>
         </div>
       </motion.div>
@@ -215,7 +227,9 @@ export default function RepositoryDetail() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
             >
-              {tab === "overview" && <FilesPanel owner={owner} repo={repo} root />}
+              {tab === "overview" && (
+                <OverviewPanel owner={owner} repo={repo} repoData={data} />
+              )}
               {tab === "files" && <FilesPanel owner={owner} repo={repo} />}
               {tab === "commits" && <CommitsPanel owner={owner} repo={repo} />}
               {tab === "branches" && (
