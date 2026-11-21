@@ -56,9 +56,24 @@ export async function exchangeCodeForToken(code: string): Promise<TokenResponse>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ code }),
   });
-  const data = await res.json();
+
+  const raw = await res.text();
+  let data: TokenResponse & { error?: string };
+  try {
+    data = raw ? JSON.parse(raw) : ({} as TokenResponse);
+  } catch {
+    throw new Error(
+      "Server OAuth tidak merespons (pastikan backend di :8787 berjalan — npm run server atau npm run dev)."
+    );
+  }
+
   if (!res.ok) {
     throw new Error(data.error || "Gagal menukar kode OAuth dengan token.");
+  }
+  if (!data.access_token) {
+    throw new Error(
+      "Server OAuth tidak merespons (pastikan backend di :8787 berjalan — npm run server atau npm run dev)."
+    );
   }
   return data;
 }
