@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -36,6 +36,7 @@ type Tab = "overview" | "files" | "commits" | "branches" | "about";
 
 export default function RepositoryDetail() {
   const { owner = "", repo = "" } = useParams();
+  const navigate = useNavigate();
   const [data, setData] = useState<GithubRepo | null>(null);
   const [languages, setLanguages] = useState<Record<string, number>>({});
   const [contributors, setContributors] = useState<GithubContributor[]>([]);
@@ -83,9 +84,12 @@ export default function RepositoryDetail() {
     return (
       <div className="mx-auto max-w-2xl px-6 py-24 text-center">
         <p className="text-sm text-red-500">{error || "Repository tidak ditemukan."}</p>
-        <Link to="/my-repositories" className="mt-4 inline-block text-sm font-medium text-indigo-600 dark:text-indigo-400">
-          &larr; Back to My Repositories
-        </Link>
+        <button
+          onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/"))}
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+        >
+          <ArrowLeft size={15} /> Back
+        </button>
       </div>
     );
   }
@@ -100,13 +104,13 @@ export default function RepositoryDetail() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
-      <Link
-        to="/my-repositories"
+      <button
+        onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/"))}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
       >
         <ArrowLeft size={15} />
-        Back to My Repositories
-      </Link>
+        Back
+      </button>
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
