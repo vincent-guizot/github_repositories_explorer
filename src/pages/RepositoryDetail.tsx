@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import CloneDropdown from "../components/CloneDropdown";
 import OverviewPanel from "../components/OverviewPanel";
+import CodeViewerModal from "../components/CodeViewerModal";
 import {
   getRepo,
   getRepoLanguages,
@@ -366,6 +367,7 @@ function FilesPanel({
   const [path, setPath] = useState("");
   const [items, setItems] = useState<GithubContentItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedFile, setSelectedFile] = useState<GithubContentItem | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -423,9 +425,17 @@ function FilesPanel({
           <FileRow
             key={item.path}
             item={item}
-            onOpen={(i) => !root && setPath(i.path)}
+            onOpenDir={(i) => !root && setPath(i.path)}
+            onOpenFile={(i) => setSelectedFile(i)}
           />
         ))}
+
+      <CodeViewerModal
+        owner={owner}
+        repo={repo}
+        item={selectedFile}
+        onClose={() => setSelectedFile(null)}
+      />
     </div>
   );
 }
