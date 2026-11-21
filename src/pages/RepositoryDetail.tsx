@@ -22,6 +22,8 @@ import {
 import CloneDropdown from "../components/CloneDropdown";
 import OverviewPanel from "../components/OverviewPanel";
 import CodeViewerModal from "../components/CodeViewerModal";
+import IssuesPanel from "../components/IssuesPanel";
+import ReleasesPanel from "../components/ReleasesPanel";
 import {
   getRepo,
   getRepoLanguages,
@@ -38,7 +40,14 @@ import {
 import { formatCount, formatDate, timeAgo, languageColor } from "../lib/format";
 import FileRow from "../components/FileRow";
 
-type Tab = "overview" | "files" | "commits" | "branches" | "about";
+type Tab =
+  | "overview"
+  | "files"
+  | "commits"
+  | "branches"
+  | "issues"
+  | "releases"
+  | "about";
 
 export default function RepositoryDetail() {
   const { owner = "", repo = "" } = useParams();
@@ -112,6 +121,8 @@ export default function RepositoryDetail() {
     { id: "files", label: "Files" },
     { id: "commits", label: "Commits" },
     { id: "branches", label: "Branches" },
+    { id: "issues", label: "Issues & PRs" },
+    { id: "releases", label: "Releases" },
     { id: "about", label: "About" },
   ];
 
@@ -236,6 +247,8 @@ export default function RepositoryDetail() {
               {tab === "branches" && (
                 <BranchesPanel owner={owner} repo={repo} defaultBranch={data.default_branch} />
               )}
+              {tab === "issues" && <IssuesPanel owner={owner} repo={repo} />}
+              {tab === "releases" && <ReleasesPanel owner={owner} repo={repo} />}
               {tab === "about" && <AboutPanel data={data} />}
             </motion.div>
           </AnimatePresence>
