@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, useMemo, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -7,6 +7,8 @@ import {
   Rocket,
   RefreshCw,
   SearchX,
+  SlidersHorizontal,
+  ArrowUpDown,
 } from "lucide-react";
 import {
   searchUsers,
@@ -18,6 +20,7 @@ import UserResultCard from "../components/UserResultCard";
 import RepoResultCard from "../components/RepoResultCard";
 
 type Mode = "users" | "repositories";
+type RepoSort = "stars" | "forks" | "updated" | "name";
 
 const listVariants = {
   hidden: {},
@@ -37,6 +40,32 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<GithubSearchUser[]>([]);
   const [repos, setRepos] = useState<GithubRepo[]>([]);
+  const [repoSort, setRepoSort] = useState<RepoSort>("stars");
+  const [langFilter, setLangFilter] = useState<string>("all");
+
+  const availableLanguages = useMemo(() => {
+    const set = new Set<string>();
+    repos.forEach((r) => {
+      if (r.language) set.add(r.language);
+    });
+    return Array.from(set).sort();
+  }, [repos]);
+
+  const displayedRepos = useMemo(() => {
+    let list = [...repos];
+    if (langFilter !== "all") {
+      list = list.filter((r) => r.language === langFilter);
+    }
+    list.sort((a, b) => {
+      if (repoSort === "stars") return b.stargazers_count - a.stargazers_count;
+      if (repoSort === "forks") return b.forks_count - a.forks_count;
+      if (repoSort === "updated")
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      if (repoSort === "name") return a.name.localeCompare(b.name);
+      return 0;
+    });
+    return list;
+  }, [repos, langFilter, repoSort]);
 
   async function runSearch(q: string, m: Mode) {
     const trimmed = q.trim();
@@ -211,15 +240,57 @@ export default function Home() {
               )}
 
               {!loading && !error && results.length > 0 && (
-                <motion.div
-                  variants={listVariants}
-                  initial="hidden"
-                  animate="show"
-                >
-                  {mode === "users"
-                    ? users.map((u) => <UserResultCard key={u.id} user={u} />)
-                    : repos.map((r) => <RepoResultCard key={r.id} repo={r} />)}
-                </motion.div>
+                <>
+                  {mode === "repositories" && repos.length > 0 && (
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/60 px-6 py-3 text-xs dark:border-slate-800 dark:bg-slate-800/40">
+                      <div className="flex items-center gap-2">
+                        <SlidersHorizontal size={14} className="text-slate-400" />
+                        <span className="font-medium text-slate-600 dark:text-slate-300">
+                          Bahasa:
+                        </span>
+                        <select
+                          value={langFilter}
+                          onChange={(e) => setLangFilter(e.target.value)}
+                          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-slate-700 outline-none transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                        >
+                          <option value="all">Semua Bahasa</option>
+                          {availableLanguages.map((l) => (
+                            <option key={l} value={l}>
+                              {l}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <ArrowUpDown size={14} className="text-slate-400" />
+                        <span className="font-medium text-slate-600 dark:text-slate-300">
+                          Urutkan:
+                        </span>
+                        <select
+                          value={repoSort}
+                          onChange={(e) => setRepoSort(e.target.value as RepoSort)}
+                          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-slate-700 outline-none transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                        >
+                          <option value="stars">⭐ Bintang Terbanyak</option>
+                          <option value="forks">🍴 Forks Terbanyak</option>
+                          <option value="updated">🕒 Baru Diupdate</option>
+                          <option value="name">🔤 Nama (A-Z)</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  <motion.div
+                    variants={listVariants}
+                    initial="hidden"
+                    animate="show"
+                  >
+                    {mode === "users"
+                      ? users.map((u) => <UserResultCard key={u.id} user={u} />)
+                      : displayedRepos.map((r) => <RepoResultCard key={r.id} repo={r} />)}
+                  </motion.div>
+                </>
               )}
             </motion.div>
           )}

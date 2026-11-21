@@ -1,11 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Folder, Search, Code2, Star, GitFork, Eye, RefreshCw } from "lucide-react";
+import {
+  Folder,
+  Search,
+  Code2,
+  Star,
+  GitFork,
+  Eye,
+  RefreshCw,
+  SlidersHorizontal,
+  ArrowUpDown,
+} from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { getAuthenticatedUserRepos, type GithubRepo } from "../lib/github";
 import StatCard from "../components/StatCard";
 import RepoListItem from "../components/RepoListItem";
+
+type RepoSort = "stars" | "forks" | "updated" | "name";
 
 const listVariants = {
   hidden: {},
@@ -18,6 +30,8 @@ export default function MyRepositories() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [repoSort, setRepoSort] = useState<RepoSort>("updated");
+  const [langFilter, setLangFilter] = useState<string>("all");
 
   useEffect(() => {
     if (!user) return;
@@ -39,13 +53,31 @@ export default function MyRepositories() {
     };
   }, [user]);
 
-  const filtered = useMemo(
-    () =>
-      repos.filter((r) =>
-        r.name.toLowerCase().includes(query.trim().toLowerCase())
-      ),
-    [repos, query]
-  );
+  const availableLanguages = useMemo(() => {
+    const set = new Set<string>();
+    repos.forEach((r) => {
+      if (r.language) set.add(r.language);
+    });
+    return Array.from(set).sort();
+  }, [repos]);
+
+  const filtered = useMemo(() => {
+    let list = repos.filter((r) =>
+      r.name.toLowerCase().includes(query.trim().toLowerCase())
+    );
+    if (langFilter !== "all") {
+      list = list.filter((r) => r.language === langFilter);
+    }
+    list.sort((a, b) => {
+      if (repoSort === "stars") return b.stargazers_count - a.stargazers_count;
+      if (repoSort === "forks") return b.forks_count - a.forks_count;
+      if (repoSort === "updated")
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      if (repoSort === "name") return a.name.localeCompare(b.name);
+      return 0;
+    });
+    return list;
+  }, [repos, query, langFilter, repoSort]);
 
   const totals = useMemo(
     () => ({
@@ -105,6 +137,45 @@ export default function MyRepositories() {
       </motion.div>
 
       <div className="mt-8 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        {!loading && !error && repos.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/60 px-6 py-3.5 text-xs dark:border-slate-800 dark:bg-slate-800/40">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal size={14} className="text-slate-400" />
+              <span className="font-medium text-slate-600 dark:text-slate-300">
+                Bahasa:
+              </span>
+              <select
+                value={langFilter}
+                onChange={(e) => setLangFilter(e.target.value)}
+                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-slate-700 outline-none transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              >
+                <option value="all">Semua Bahasa</option>
+                {availableLanguages.map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <ArrowUpDown size={14} className="text-slate-400" />
+              <span className="font-medium text-slate-600 dark:text-slate-300">
+                Urutkan:
+              </span>
+              <select
+                value={repoSort}
+                onChange={(e) => setRepoSort(e.target.value as RepoSort)}
+                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-slate-700 outline-none transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              >
+                <option value="updated">🕒 Baru Diupdate</option>
+                <option value="stars">⭐ Bintang Terbanyak</option>
+                <option value="forks">🍴 Forks Terbanyak</option>
+                <option value="name">🔤 Nama (A-Z)</option>
+              </select>
+            </div>
+          </div>
+        )}
         {loading && (
           <div className="flex flex-col items-center justify-center gap-3 py-20 text-slate-400 dark:text-slate-500">
             <RefreshCw size={20} className="animate-spin" />
